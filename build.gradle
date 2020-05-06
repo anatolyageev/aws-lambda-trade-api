@@ -17,7 +17,7 @@ dependencies {
 wrapper {
     distributionType = Wrapper.DistributionType.ALL
 }
-task buildZip(type: Jar) {
+task buildJar(type: Jar) {
     from compileJava
     from processResources
     into('lib') {
@@ -25,4 +25,4 @@ task buildZip(type: Jar) {
     }
 }
 
-build.dependsOn buildZip
+build.dependsOn buildJar
