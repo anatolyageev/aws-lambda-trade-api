@@ -4,8 +4,10 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
+import com.amazonaws.services.sns.model.SetSMSAttributesRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -67,6 +69,19 @@ public class TradeApiScanner implements RequestHandler<Object, String> {
     public static void sendSMSMessage(AmazonSNSClient snsClient, String message,
                                       String phoneNumber, LambdaLogger logger) {
         logger.log(message + "\n");
+        Map<String, MessageAttributeValue> smsAttributes =
+                new HashMap<>();
+        smsAttributes.put("AWS.SNS.SMS.SenderID", new MessageAttributeValue()
+                .withStringValue("mySenderID") //The sender ID shown on the device.
+                .withDataType("String"));
+        smsAttributes.put("AWS.SNS.SMS.SMSType", new MessageAttributeValue()
+                .withStringValue("Promotional") //Sets the type to promotional.
+                .withDataType("String"));
+        SetSMSAttributesRequest setRequest = new SetSMSAttributesRequest()
+                .addAttributesEntry("MonthlySpendLimit", "15")
+                .addAttributesEntry("DeliveryStatusSuccessSamplingRate", "10")
+                .addAttributesEntry("DefaultSMSType", "Promotional");
+        snsClient.setSMSAttributes(setRequest);
         PublishResult result = snsClient.publish(new PublishRequest()
                 .withMessage(message)
                 .withPhoneNumber(phoneNumber)
